@@ -7,6 +7,8 @@ cd $(dirname $0)
 ./validate
 ./test -cover
 ./package
+# Uncomment the following line to build the custom tyk image and comment the line above
+#./package-custom-image
 
 image=`cat ../bin/latest_image`
 
