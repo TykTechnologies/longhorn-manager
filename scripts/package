@@ -10,7 +10,7 @@ SUFFIX=""
 [ "${ARCH}" != "amd64" ] && SUFFIX="_${ARCH}"
 
 TAG=${TAG:-${IMAGE_TAG_PREFIX}${SUFFIX}}
-REPO=${REPO:-tykio}
+REPO=${REPO:-longhornio}
 IMAGE=${IMAGE:-${REPO}/longhorn-manager:${TAG}}
 
 if [ ! -e ./bin/longhorn-manager ]; then
@@ -23,24 +23,7 @@ trap 'rm -rf ./package/bin' exit
 BASE_IMAGE=`grep FROM package/Dockerfile  | awk '{print $2}'`
 docker pull ${BASE_IMAGE}
 
-docker buildx create --name multiarch --use
-docker buildx inspect --bootstrap
-
-#buildx build --platform linux/amd64,linux/arm64 -t ${IMAGE} -f package/Dockerfile --load .
-docker buildx build --platform linux/amd64 -t ${REPO}/longhorn-manager:v1.5.5-timeout-amd64 -f package/Dockerfile --load .
-docker buildx build --platform linux/arm64 -t ${REPO}/longhorn-manager:v1.5.5-timeout-arm64 -f package/Dockerfile --load .
-
-# Create the manifest for the multi-arch image
-docker manifest create ${REPO}/longhorn-manager:v1.5.5-timeout \
-  ${REPO}/longhorn-manager:v1.5.5-timeout-arm64 \
-  ${REPO}/longhorn-manager:v1.5.5-timeout-amd64
-
-# UNCOMMENT to Push the images to the registry
-# docker push ${REPO}/longhorn-manager:v1.5.5-timeout-arm64
-# docker push ${REPO}/longhorn-manager:v1.5.5-timeout-amd64
-
-# UNCOMMENT to Push the manifest to the registry
-# docker manifest push ${REPO}/longhorn-manager:v1.5.5-timeout
+docker build -t ${IMAGE} -f package/Dockerfile .
 
 echo Built ${IMAGE}
 
