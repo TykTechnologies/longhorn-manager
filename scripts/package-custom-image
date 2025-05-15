@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+source $(dirname $0)/version
+
+cd $(dirname $0)/..
+
+ARCH=${ARCH:-amd64}
+SUFFIX=""
+[ "${ARCH}" != "amd64" ] && SUFFIX="_${ARCH}"
+
+TAG=${TAG:-${IMAGE_TAG_PREFIX}${SUFFIX}}
+REPO=${REPO:-tykio}
+IMAGE=${IMAGE:-${REPO}/longhorn-manager:${TAG}}
+
+if [ ! -e ./bin/longhorn-manager ]; then
+    ./scripts/build
+fi
+
+trap 'rm -rf ./package/bin' exit
+
+# update base image to get latest changes
+BASE_IMAGE=`grep FROM package/Dockerfile  | awk '{print $2}'`
+docker pull ${BASE_IMAGE}
+
+# You may need to run the following command separately on yout host machine
+# build the multiarch image
+docker buildx create --name multiarch --use
+docker buildx inspect --bootstrap
+
+docker buildx build --platform linux/amd64 -t ${REPO}/longhorn-manager:v1.5.5-timeout-amd64 -f package/Dockerfile --load .
+docker buildx build --platform linux/arm64 -t ${REPO}/longhorn-manager:v1.5.5-timeout-arm64 -f package/Dockerfile --load .
+
+# Create the manifest for the multi-arch image
+docker manifest create ${REPO}/longhorn-manager:v1.5.5-timeout \
+  ${REPO}/longhorn-manager:v1.5.5-timeout-arm64 \
+  ${REPO}/longhorn-manager:v1.5.5-timeout-amd64
+
+# Push the images to the registry
+docker push ${REPO}/longhorn-manager:v1.5.5-timeout-arm64
+docker push ${REPO}/longhorn-manager:v1.5.5-timeout-amd64
+
+# Push the manifest to the registry
+docker manifest push ${REPO}/longhorn-manager:v1.5.5-timeout
+
+echo Built ${IMAGE}
+
+echo ${IMAGE} > ./bin/latest_image
