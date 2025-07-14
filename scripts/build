@@ -7,8 +7,17 @@ cd $(dirname $0)/..
 
 mkdir -p bin
 [ "$(uname)" != "Darwin" ] && LINKFLAGS="-extldflags -static -s"
-CGO_ENABLED=0 go build -ldflags \
+
+# Build for amd64
+CGO_ENABLED=0 GOARCH=amd64 go build -ldflags \
   "-X github.com/longhorn/longhorn-manager/meta.Version=$VERSION \
    -X github.com/longhorn/longhorn-manager/meta.GitCommit=$GITCOMMIT \
    -X github.com/longhorn/longhorn-manager/meta.BuildDate=$BUILDDATE \
-   $LINKFLAGS" -o bin/longhorn-manager
+   $LINKFLAGS" -o bin/amd64/longhorn-manager
+
+# Build for arm64
+CGO_ENABLED=0 GOARCH=arm64 go build -ldflags \
+  "-X github.com/longhorn/longhorn-manager/meta.Version=$VERSION \
+   -X github.com/longhorn/longhorn-manager/meta.GitCommit=$GITCOMMIT \
+   -X github.com/longhorn/longhorn-manager/meta.BuildDate=$BUILDDATE \
+   $LINKFLAGS" -o bin/arm64/longhorn-manager

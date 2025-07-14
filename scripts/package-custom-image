@@ -25,23 +25,23 @@ docker pull ${BASE_IMAGE}
 
 # You may need to run the following command separately on yout host machine
 # build the multiarch image
-docker buildx create --name multiarch --use
-docker buildx inspect --bootstrap
+#docker buildx create --name multiarch --use
+#docker buildx inspect --bootstrap
 
-docker buildx build --platform linux/amd64 -t ${REPO}/longhorn-manager:v1.5.5-timeout-amd64 -f package/Dockerfile --load .
-docker buildx build --platform linux/arm64 -t ${REPO}/longhorn-manager:v1.5.5-timeout-arm64 -f package/Dockerfile --load .
-
-# Create the manifest for the multi-arch image
-docker manifest create ${REPO}/longhorn-manager:v1.5.5-timeout \
-  ${REPO}/longhorn-manager:v1.5.5-timeout-arm64 \
-  ${REPO}/longhorn-manager:v1.5.5-timeout-amd64
+docker buildx build --platform linux/amd64 -t ${REPO}/longhorn-manager:v1.5.52-timeout-amd64 -f package/Dockerfile-amd64 --load .
+docker buildx build --platform linux/arm64 -t ${REPO}/longhorn-manager:v1.5.52-timeout-arm64 -f package/Dockerfile-arm64 --load .
 
 # Push the images to the registry
-docker push ${REPO}/longhorn-manager:v1.5.5-timeout-arm64
-docker push ${REPO}/longhorn-manager:v1.5.5-timeout-amd64
+docker push ${REPO}/longhorn-manager:v1.5.52-timeout-arm64
+docker push ${REPO}/longhorn-manager:v1.5.52-timeout-amd64
+
+# Create the manifest for the multi-arch image
+docker manifest create ${REPO}/longhorn-manager:v1.5.52-timeout \
+  ${REPO}/longhorn-manager:v1.5.52-timeout-arm64 \
+  ${REPO}/longhorn-manager:v1.5.52-timeout-amd64
 
 # Push the manifest to the registry
-docker manifest push ${REPO}/longhorn-manager:v1.5.5-timeout
+docker manifest push ${REPO}/longhorn-manager:v1.5.52-timeout
 
 echo Built ${IMAGE}
 
