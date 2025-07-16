@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	AdmissionTypeValidation = "validation"
+	AdmissionTypeValidation = "validaton"
 	AdmissionTypeMutation   = "mutation"
 )
 
